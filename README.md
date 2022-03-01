@@ -2,7 +2,12 @@
 easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助我们通过注解优雅地聚合项目中的操作日志，对业务代码无侵入。
 
 ## 2. 使用场景
-一般系统都会有操作日志，通过操作日志可追溯到 某人在某时干了某事情，如：
+所有系统都会有日志，但我们区分了 **系统日志** 和 **操作日志**
+
+- 系统日志：主要用于开发者调试排查系统问题的，不要求固定格式和可读性
+- 操作日志：主要面向用户的，要求简单易懂，反应出用户所做的动作。
+
+通过操作日志可追溯到 某人在某时干了某事情，如：
 
 | 租户  | 操作人 | 时间               | 操作 | 内容                           |
 | ----- | ------ | ------------------ | ---- | ------------------------------ |
@@ -49,7 +54,7 @@ public String test(UserDto userDto) {
 | detail      | 详细的记录信息                  | 是         | 否   |
 | condition   | 是否记录的条件 (默认:true 记录) | 是         | 否   |
 
-
+> 注意: 表达式需要用双花括号包起来（如： {{#name}} 或 {getNameById{#id}} ），便于解析。
 
 ### 4.3 获取操作者
 如果不在上述注解中指定租户和操作人，那么可统一设置，方式如下：
@@ -69,7 +74,7 @@ public class OperatorGetService implements IOperatorService {
 ```
 
 ### 4.4 自定义函数
-
+当方法参数中，没有你想要的数据时，我们可以通过自定义函数来实现。
 实现 **ICustomFunction** 接口，并交给Spring管理。
 ```java
 @Component
@@ -80,11 +85,25 @@ public class GetRealNameById implements ICustomFunction {
     }
     @Override
     public String functionName() {
-        return "functionName";
+        return "GetRealNameById";
     }
     @Override
     public String apply(String value) {
         return "easylog".equals(value) ? "good" : value;
+    }
+}
+```
+
+### 4.5 接收操作日志
+我们接收到操作日志后，可根据实际情况来选择如何处理，是存储到数据库还是发送到MQ都可以。
+实现 **ILogRecordService** 接口，并交给Spring管理。
+```java
+@Slf4j
+@Service
+public class OpLogRecordService implements ILogRecordService {
+    @Override
+    public void record(EasyLogInfo easyLogInfo) {
+        log.info("hello easy-log:{}", JsonUtils.toJSONString(easyLogInfo));
     }
 }
 ```
