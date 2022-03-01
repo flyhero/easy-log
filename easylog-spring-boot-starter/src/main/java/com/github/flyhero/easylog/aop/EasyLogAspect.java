@@ -7,6 +7,7 @@ import com.github.flyhero.easylog.function.EasyLogParser;
 import com.github.flyhero.easylog.model.EasyLogOps;
 import com.github.flyhero.easylog.model.EasyLogInfo;
 import com.github.flyhero.easylog.function.IFunctionService;
+import com.github.flyhero.easylog.model.MethodExecuteResult;
 import com.github.flyhero.easylog.service.ILogRecordService;
 import com.github.flyhero.easylog.service.IOperatorService;
 import com.github.flyhero.easylog.util.JsonUtils;
@@ -20,7 +21,6 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StopWatch;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -60,60 +60,48 @@ public class EasyLogAspect {
     @Around("pointCut() && @annotation(easyLog)")
     public Object around(ProceedingJoinPoint joinPoint, EasyLog easyLog) throws Throwable {
 
-        StopWatch stopWatch = new StopWatch("记录操作日志");
-        stopWatch.start("执行前操作");
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         Object[] args = joinPoint.getArgs();
 
-        // 1. 方法参数添加到上下文
-        EasyLogEvaluationContext evaluationContext = new EasyLogEvaluationContext(null, method, args, new DefaultParameterNameDiscoverer());
+        EasyLogEvaluationContext evaluationContext = new EasyLogEvaluationContext(method, args, new DefaultParameterNameDiscoverer());
         EasyLogOps easyLogOps = parseLogAnnotation(easyLog);
-
         Map<String, String> map = easyLogParser.processBeforeExec(easyLogOps, evaluationContext);
 
-        long operatorDate = System.currentTimeMillis();
         Object result = null;
-        boolean success = true;
-        String errMsg = null;
-        stopWatch.stop();
+        MethodExecuteResult executeResult = new MethodExecuteResult(true);
         try {
-            stopWatch.start("执行目标方法");
             result = joinPoint.proceed();
-            stopWatch.stop();
+            executeResult.calcExecuteTime();
         } catch (Throwable e) {
-            stopWatch.stop();
-            success = false;
-            errMsg = e.getMessage();
-            evaluationContext.setVariable(VarConsts.ERR_MSG, errMsg);
-            throw e;
-        } finally {
-            stopWatch.start("执行后操作");
-            evaluationContext.setVariable(VarConsts.RESULT, JsonUtils.toJSONString(result));
+            executeResult.exception(e);
+        }
+        evaluationContext.putResult(executeResult.getErrMsg(), result);
 
-            if (!success && ObjectUtils.isEmpty(easyLogOps.getFail())) {
-                log.error("[{}] 方法执行失败，EasyLog 失败模板没有配置", method.getName());
-            }else {
-                Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, evaluationContext);
-                EasyLogInfo easyLogInfo = createEasyLogInfo(templateMap, easyLogOps);
-                if (Objects.nonNull(easyLogInfo)) {
-                    easyLogInfo.setContent(success ? templateMap.get(easyLogOps.getContent()) : templateMap.get(easyLogOps.getFail()));
-                    easyLogInfo.setSuccess(success);
-                    easyLogInfo.setResult(JsonUtils.toJSONString(result));
-                    easyLogInfo.setErrorMsg(errMsg);
-                    Long time = Arrays.stream(stopWatch.getTaskInfo())
-                            .filter(taskInfo -> "执行目标方法".equals(taskInfo.getTaskName()))
-                            .map(StopWatch.TaskInfo::getTimeMillis).findFirst().orElse(-1L);
-                    easyLogInfo.setExecutionTime(time);
-                    easyLogInfo.setOperateDate(operatorDate);
-                    logRecordService.record(easyLogInfo);
-                }
-            }
-
-            stopWatch.stop();
-            System.out.println(stopWatch.prettyPrint());
+        if (!executeResult.isSuccess() && ObjectUtils.isEmpty(easyLogOps.getFail())) {
+            log.warn("[{}] 方法执行失败，EasyLog 失败模板没有配置", method.getName());
+        } else {
+            Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, evaluationContext);
+            sendLog(easyLogOps, result, executeResult, templateMap);
+        }
+        //抛出异常
+        if (!executeResult.isSuccess()){
+            throw executeResult.getThrowable();
         }
         return result;
+    }
+
+    private void sendLog(EasyLogOps easyLogOps, Object result, MethodExecuteResult executeResult, Map<String, String> templateMap) {
+        EasyLogInfo easyLogInfo = createEasyLogInfo(templateMap, easyLogOps);
+        if (Objects.nonNull(easyLogInfo)) {
+            easyLogInfo.setContent(executeResult.isSuccess() ? templateMap.get(easyLogOps.getContent()) : templateMap.get(easyLogOps.getFail()));
+            easyLogInfo.setSuccess(executeResult.isSuccess());
+            easyLogInfo.setResult(JsonUtils.toJSONString(result));
+            easyLogInfo.setErrorMsg(executeResult.getErrMsg());
+            easyLogInfo.setExecuteTime(executeResult.getExecuteTime());
+            easyLogInfo.setOperateTime(executeResult.getOperateTime());
+            logRecordService.record(easyLogInfo);
+        }
     }
 
     /**

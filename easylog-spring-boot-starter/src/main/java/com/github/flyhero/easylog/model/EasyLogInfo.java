@@ -40,12 +40,12 @@ public class EasyLogInfo {
     /**
      * 操作时间 时间戳单位：ms
      */
-    private Long operateDate;
+    private Long operateTime;
 
     /**
      * 操作花费的时间 单位：ms
      */
-    private Long executionTime;
+    private Long executeTime;
 
     /**
      * 是否调用成功
