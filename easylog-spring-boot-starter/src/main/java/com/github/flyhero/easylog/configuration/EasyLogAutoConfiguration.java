@@ -2,6 +2,7 @@ package com.github.flyhero.easylog.configuration;
 
 import com.github.flyhero.easylog.annotation.EasyLog;
 import com.github.flyhero.easylog.function.CustomFunctionFactory;
+import com.github.flyhero.easylog.function.EasyLogParser;
 import com.github.flyhero.easylog.function.impl.DefaultCustomFunction;
 import com.github.flyhero.easylog.function.ICustomFunction;
 import com.github.flyhero.easylog.function.IFunctionService;
@@ -46,16 +47,20 @@ public class EasyLogAutoConfiguration {
         return new DefaultCustomFunction();
     }
 
+
     @Bean
     public CustomFunctionFactory CustomFunctionRegistrar(@Autowired List<ICustomFunction> iCustomFunctionList){
         return new CustomFunctionFactory(iCustomFunctionList);
     }
 
     @Bean
-    @ConditionalOnMissingBean(IFunctionService.class)
-    @Role(BeanDefinition.ROLE_APPLICATION)
     public IFunctionService customFunctionService(CustomFunctionFactory customFunctionFactory){
         return new DefaultFunctionServiceImpl(customFunctionFactory);
+    }
+
+    @Bean
+    public EasyLogParser easyLogParser(IFunctionService functionService){
+        return new EasyLogParser(functionService);
     }
 
     @Bean
