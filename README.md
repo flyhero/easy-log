@@ -35,7 +35,7 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
 在要记录操作日志的方法上添加EasyLog注解并填写对应内容：
 
 ```java
-@EasyLog(module = "用户模块", operator = "{{#userDto.toString()}}", operateType = "新增",
+@EasyLog(module = "用户模块", operator = "{{#userDto.toString()}}", type = "新增",
         content = "测试 {functionName{#userDto.name}}",
         condition = "{{#userDto.name == 'easylog'}}")
 public String test(UserDto userDto) {
@@ -47,14 +47,14 @@ public String test(UserDto userDto) {
 | tenant      | 租户，SAAS系统中区分不同租户    | 是         | 否   |
 | operator    | 操作者                          | 是         | 否   |
 | module      | 模块，区分不同业务模块          | 否         | 否   |
-| operateType | 操作类型，形如：增删改查        | 否         | 否   |
+| type | 操作类型，形如：增删改查        | 否         | 否   |
 | bizNo       | 业务编号，操作关联的主题标志    | 是         | 否   |
 | content     | 日志模板内容                    | 是         | 是   |
 | fail        | 操作失败时的模板内容            | 是         | 否   |
 | detail      | 详细的记录信息                  | 是         | 否   |
 | condition   | 是否记录的条件 (默认:true 记录) | 是         | 否   |
 
-> 注意: 表达式需要用双花括号包起来（如： {{#name}} 或 {getNameById{#id}} ），便于解析。
+> 注意: 表达式需要用双花括号包起来（如： {{#name}} 或 {getNameById{#id}} ），便于解析。如果获取方法的执行结果或错误信息，可使用{{#_result}}和{{#_errMsg}}。
 
 ### 4.3 获取操作者
 如果不在上述注解中指定租户和操作人，那么可统一设置，方式如下：
