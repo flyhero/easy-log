@@ -7,6 +7,6 @@ package com.github.flyhero.easylog.constants;
 public final class VarConsts {
 
     public static final String POUND_KEY = "#";
-    public static final String ERR_MSG = "errMsg";
-    public static final String RESULT = "result";
+    public static final String ERR_MSG = "_errMsg";
+    public static final String RESULT = "_result";
 }

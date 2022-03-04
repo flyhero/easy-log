@@ -46,7 +46,7 @@ public class TestController {
     }
 
 
-    @EasyLog(module = "测试4", operateType = "查询", content = "测试 {{#name}}", fail = "新增失败：{{#errMsg}}")
+    @EasyLog(module = "测试4", operateType = "查询", content = "测试 {{#name}}", fail = "新增失败：{{#_errMsg}}")
     @GetMapping("/test4")
     public String test4(@RequestParam String name) {
         if ("easylog".equalsIgnoreCase(name)){
@@ -55,7 +55,7 @@ public class TestController {
         return name;
     }
 
-    @EasyLog(module = "测试5", operateType = "查询", content = "查询结果： {{#result}}")
+    @EasyLog(module = "测试5", operateType = "查询", content = "查询结果： {{#_result}}")
     @GetMapping("/test5")
     public String test5(@RequestParam String name) {
         return name;
