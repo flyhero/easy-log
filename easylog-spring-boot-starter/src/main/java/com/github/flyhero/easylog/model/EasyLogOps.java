@@ -16,7 +16,7 @@ public class EasyLogOps {
 
     private String module;
 
-    private String operateType;
+    private String type;
 
     private String content;
 

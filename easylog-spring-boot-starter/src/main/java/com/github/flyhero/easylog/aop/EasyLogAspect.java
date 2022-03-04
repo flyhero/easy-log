@@ -1,7 +1,6 @@
 package com.github.flyhero.easylog.aop;
 
 import com.github.flyhero.easylog.annotation.EasyLog;
-import com.github.flyhero.easylog.constants.VarConsts;
 import com.github.flyhero.easylog.context.EasyLogEvaluationContext;
 import com.github.flyhero.easylog.function.EasyLogParser;
 import com.github.flyhero.easylog.model.EasyLogOps;
@@ -128,7 +127,7 @@ public class EasyLogAspect {
             operator = operatorService.getOperator();
         }
         easyLogInfo.setModule(easyLogOps.getModule());
-        easyLogInfo.setOperateType(easyLogOps.getOperateType());
+        easyLogInfo.setType(easyLogOps.getType());
         easyLogInfo.setOperator(operator);
         easyLogInfo.setBizNo(templateMap.get(easyLogOps.getBizNo()));
         easyLogInfo.setDetails(templateMap.get(easyLogOps.getDetails()));
@@ -147,7 +146,7 @@ public class EasyLogAspect {
         easyLogOps.setContent(easyLog.content());
         easyLogOps.setFail(easyLog.fail());
         easyLogOps.setModule(easyLog.module());
-        easyLogOps.setOperateType(easyLog.operateType());
+        easyLogOps.setType(easyLog.type());
         easyLogOps.setOperator(easyLog.operator());
         easyLogOps.setBizNo(easyLog.bizNo());
         easyLogOps.setTenant(easyLog.tenant());

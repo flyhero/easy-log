@@ -18,26 +18,26 @@ public class TestController {
     @Autowired
     private ITestService testService;
 
-    @EasyLog(module = "测试", operateType = OperateType.SELECT, content = "测试 {{#name}}")
+    @EasyLog(module = "测试", type = OperateType.SELECT, content = "测试 {{#name}}")
     @GetMapping("/test")
     public String test(@RequestParam String name) {
         return name;
     }
 
-    @EasyLog(module = "测试1", operateType = OperateType.SELECT, content = "测试 {getBeforeRealNameByName{#name}}")
+    @EasyLog(module = "测试1", type = OperateType.SELECT, content = "测试 {getBeforeRealNameByName{#name}}")
     @GetMapping("/test1")
     public String test1(@RequestParam String name) {
         return name;
     }
 
-    @EasyLog(module = "测试2", operateType = OperateType.SELECT, content = "测试 {getBeforeRealNameByName{#name}}",
+    @EasyLog(module = "测试2", type = OperateType.SELECT, content = "测试 {getBeforeRealNameByName{#name}}",
             condition = "{{#name == 'easylog'}}")
     @GetMapping("/test2")
     public String test2(@RequestParam String name) {
         return name;
     }
 
-    @EasyLog(module = "测试3", operator = "{{#userDto.toString()}}", operateType = OperateType.ADD,
+    @EasyLog(module = "测试3", operator = "{{#userDto.toString()}}", type = OperateType.ADD,
             content = "测试 {getAfterRealNameByName{#userDto.name}}",
             condition = "{{#userDto.name == 'easylog-new'}}")
     @PostMapping("/test3")
@@ -47,7 +47,7 @@ public class TestController {
     }
 
 
-    @EasyLog(module = "测试4", operateType = OperateType.SELECT, content = "测试 {{#name}}", fail = "新增失败：{{#_errMsg}}")
+    @EasyLog(module = "测试4", type = OperateType.SELECT, content = "测试 {{#name}}", fail = "新增失败：{{#_errMsg}}")
     @GetMapping("/test4")
     public String test4(@RequestParam String name) {
         if ("easylog".equalsIgnoreCase(name)) {
@@ -56,7 +56,7 @@ public class TestController {
         return name;
     }
 
-    @EasyLog(module = "测试5", operateType = OperateType.SELECT, content = "查询结果： {{#_result}}")
+    @EasyLog(module = "测试5", type = OperateType.SELECT, content = "查询结果： {{#_result}}")
     @GetMapping("/test5")
     public String test5(@RequestParam String name) {
         return name;

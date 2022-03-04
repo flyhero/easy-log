@@ -27,9 +27,9 @@ public @interface EasyLog {
     String module() default "";
 
     /**
-     * 操作类型：增删改查
+     * 操作类型：比如增删改查
      */
-    String operateType() default "";
+    String type() default "";
 
     /**
      * 关联的业务id

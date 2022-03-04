@@ -8,5 +8,6 @@ public interface OperateType {
 
     String ADD= "增加";
     String UPDATE= "修改";
-    String SELECT= "修改";
+    String SELECT= "查询";
+    String DELETE= "删除";
 }

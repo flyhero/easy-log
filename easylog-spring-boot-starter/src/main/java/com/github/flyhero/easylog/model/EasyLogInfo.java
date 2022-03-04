@@ -30,7 +30,7 @@ public class EasyLogInfo {
     /**
      * 操作类型
      */
-    private String operateType;
+    private String type;
 
     /**
      * 成功操作内容
