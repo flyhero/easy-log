@@ -1,3 +1,18 @@
+
+```text
+                        _             
+                       | |            
+  ___  __ _ ___ _   _  | | ___   __ _ 
+ / _ \/ _` / __| | | | | |/ _ \ / _` |
+|  __/ (_| \__ \ |_| | | | (_) | (_| |
+ \___|\__,_|___/\__, | |_|\___/ \__, |
+                 __/ |           __/ |
+                |___/           |___/ 
+
+```
+
+![xxx](https://img.shields.io/badge/version-1.0-green) ![xxx](https://img.shields.io/badge/jdk-1.8-green)  ![xxx](https://img.shields.io/badge/springboot-2.3-green)
+
 ## 1. 项目简介
 easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助我们通过注解优雅地聚合项目中的操作日志，对业务代码无侵入。
 
@@ -42,16 +57,16 @@ public String test(UserDto userDto) {
     return "test";
 }
 ```
-| 字段        | 意义                            | 支持表达式 | 必填 |
+| 字段        | 意义                            | 支持SpEl表达式 | 必填 |
 | ----------- | ------------------------------- | ---------- | ---- |
 | tenant      | 租户，SAAS系统中区分不同租户    | 是         | 否   |
 | operator    | 操作者                          | 是         | 否   |
 | module      | 模块，区分不同业务模块          | 否         | 否   |
 | type | 操作类型，形如：增删改查        | 否         | 否   |
-| bizNo       | 业务编号，操作关联的主题标志    | 是         | 否   |
+| bizNo       | 业务编号，便于查询   | 是         | 否   |
 | content     | 日志模板内容                    | 是         | 是   |
 | fail        | 操作失败时的模板内容            | 是         | 否   |
-| detail      | 详细的记录信息                  | 是         | 否   |
+| detail      | 额外的记录信息                  | 是         | 否   |
 | condition   | 是否记录的条件 (默认:true 记录) | 是         | 否   |
 
 > 注意: 表达式需要用双花括号包起来（如： {{#name}} 或 {getNameById{#id}} ），便于解析。如果获取方法的执行结果或错误信息，可使用{{#_result}}和{{#_errMsg}}。
