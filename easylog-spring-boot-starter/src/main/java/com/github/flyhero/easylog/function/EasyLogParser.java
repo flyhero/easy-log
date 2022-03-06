@@ -1,6 +1,6 @@
 package com.github.flyhero.easylog.function;
 
-import com.github.flyhero.easylog.constants.VarConsts;
+import com.github.flyhero.easylog.constants.EasyLogConsts;
 import com.github.flyhero.easylog.model.EasyLogOps;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
@@ -77,14 +77,14 @@ public class EasyLogParser {
                 Matcher matcher = PATTERN.matcher(template);
                 while (matcher.find()) {
                     String param = matcher.group(2);
-                    if (param.contains(VarConsts.POUND_KEY + VarConsts.ERR_MSG) || param.contains(VarConsts.POUND_KEY + VarConsts.RESULT)) {
+                    if (param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.ERR_MSG) || param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.RESULT)) {
                         continue;
                     }
                     String funcName = matcher.group(1);
                     if (customFunctionService.executeBefore(funcName)) {
                         Object value = expressionParser.parseExpression(param).getValue(evaluationContext, Object.class);
                         String apply = customFunctionService.apply(funcName, value == null ? null : value.toString());
-                        map.put(funcName, apply);
+                        map.put(getFunctionMapKey(funcName, param), apply);
                     }
                 }
             }
@@ -92,6 +92,16 @@ public class EasyLogParser {
         return map;
     }
 
+    /**
+     * 获取前置函数映射的 key
+     *
+     * @param funcName
+     * @param param
+     * @return
+     */
+    private String getFunctionMapKey(String funcName, String param) {
+        return funcName + EasyLogConsts.POUND_KEY + param;
+    }
 
 
     /**
@@ -105,7 +115,7 @@ public class EasyLogParser {
     public String getFunctionVal(Map<String, String> funcValBeforeExecutionMap, String funcName, String param) {
         String val = null;
         if (!CollectionUtils.isEmpty(funcValBeforeExecutionMap)) {
-            val = funcValBeforeExecutionMap.get(funcName);
+            val = funcValBeforeExecutionMap.get(getFunctionMapKey(funcName, param));
         }
         if (ObjectUtils.isEmpty(val)) {
             val = customFunctionService.apply(funcName, param);

@@ -36,8 +36,6 @@ public class EasyLogAspect {
 
     private ILogRecordService logRecordService;
 
-    private IFunctionService customFunctionService;
-
     private IOperatorService operatorService;
 
     private EasyLogParser easyLogParser;
