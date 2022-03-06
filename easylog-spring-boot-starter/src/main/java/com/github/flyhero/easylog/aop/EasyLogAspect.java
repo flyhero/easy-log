@@ -78,7 +78,7 @@ public class EasyLogAspect {
         if (!executeResult.isSuccess() && ObjectUtils.isEmpty(easyLogOps.getFail())) {
             log.warn("[{}] 方法执行失败，EasyLog 失败模板没有配置", method.getName());
         } else {
-            Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, evaluationContext);
+            Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, evaluationContext, method);
             sendLog(easyLogOps, result, executeResult, templateMap);
         }
         //抛出异常

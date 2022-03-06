@@ -1,15 +1,19 @@
 package com.github.flyhero.easylog.function;
 
 import com.github.flyhero.easylog.constants.EasyLogConsts;
+import com.github.flyhero.easylog.exception.EasyLogException;
 import com.github.flyhero.easylog.model.EasyLogOps;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.EvaluationException;
 import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +40,7 @@ public class EasyLogParser {
      * @param evaluationContext
      * @return
      */
-    public Map<String, String> process(EasyLogOps easyLogOps, Map<String, String> funcValBeforeExecMap, EvaluationContext evaluationContext) {
+    public Map<String, String> process(EasyLogOps easyLogOps, Map<String, String> funcValBeforeExecMap, EvaluationContext evaluationContext, Method method) {
         HashMap<String, String> map = new HashMap<>();
         List<String> expressTemplate = getExpressTemplate(easyLogOps);
         ExpressionParser expressionParser = new SpelExpressionParser();
@@ -54,7 +58,13 @@ public class EasyLogParser {
                 matcher.appendTail(parsedStr);
                 map.put(template, parsedStr.toString());
             } else {
-                map.put(template, template);
+                Object value = null;
+                try {
+                    value = expressionParser.parseExpression(template).getValue(evaluationContext, Object.class);
+                } catch (Exception e) {
+                    throw new EasyLogException(method.getDeclaringClass().getName() + "." + method.getName() + "下 EasyLog 解析失败: [" + template + "], 请检查是否符合SpEl表达式规范！");
+                }
+                map.put(template, value == null ? "" : value.toString());
             }
         }
         return map;
