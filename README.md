@@ -69,7 +69,9 @@ public String test(UserDto userDto) {
 | detail      | 额外的记录信息                  | 是         | 否   |
 | condition   | 是否记录的条件 (默认:true 记录) | 是         | 否   |
 
-> 注意: 表达式需要用双花括号包起来（如： {{#name}} 或 {getNameById{#id}} ），便于解析。如果获取方法的执行结果或错误信息，可使用{{#_result}}和{{#_errMsg}}。
+> 注意: 1.当使用自定义函数时，必须使用双花括号包起来（如：{getNameById{#id}} ），便于解析。
+> 2.当不使用自定义函数时，可以直接使用SpEl表达式（如：#name）
+> 如果获取方法的执行结果或错误信息，可使用{{#_result}}或#_result 和 {{#_errMsg}}或#_errMsg。
 
 ### 4.3 获取操作者
 如果不在上述注解中指定租户和操作人，那么可统一设置，方式如下：
