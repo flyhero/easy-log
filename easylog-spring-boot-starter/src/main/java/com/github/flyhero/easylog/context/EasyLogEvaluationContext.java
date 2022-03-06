@@ -1,6 +1,6 @@
 package com.github.flyhero.easylog.context;
 
-import com.github.flyhero.easylog.constants.VarConsts;
+import com.github.flyhero.easylog.constants.EasyLogConsts;
 import com.github.flyhero.easylog.util.JsonUtils;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.ParameterNameDiscoverer;
@@ -27,7 +27,7 @@ public class EasyLogEvaluationContext extends MethodBasedEvaluationContext {
      * @param result 返回结果
      */
     public void putResult(String errMsg, Object result) {
-        super.setVariable(VarConsts.ERR_MSG, errMsg);
-        super.setVariable(VarConsts.RESULT, JsonUtils.toJSONString(result));
+        super.setVariable(EasyLogConsts.ERR_MSG, errMsg);
+        super.setVariable(EasyLogConsts.RESULT, JsonUtils.toJSONString(result));
     }
 }
