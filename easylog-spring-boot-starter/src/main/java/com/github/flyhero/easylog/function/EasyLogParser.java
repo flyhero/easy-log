@@ -100,7 +100,7 @@ public class EasyLogParser {
      * @return
      */
     private String getFunctionMapKey(String funcName, String param) {
-        return funcName + EasyLogConsts.POUND_KEY + param;
+        return funcName + param;
     }
 
 
