@@ -2,6 +2,8 @@ package com.github.flyhero.easylog.context;
 
 import com.github.flyhero.easylog.constants.EasyLogConsts;
 import com.github.flyhero.easylog.util.JsonUtils;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.ParameterNameDiscoverer;
 
@@ -15,8 +17,10 @@ import java.lang.reflect.Method;
  */
 public class EasyLogEvaluationContext extends MethodBasedEvaluationContext {
 
-    public EasyLogEvaluationContext(Method method, Object[] arguments, ParameterNameDiscoverer parameterNameDiscoverer) {
+    public EasyLogEvaluationContext(Method method, Object[] arguments, ParameterNameDiscoverer parameterNameDiscoverer, BeanFactory beanFactory) {
         super(null, method, arguments, parameterNameDiscoverer);
+        // setBeanResolver 主要用于支持SpEL模板中调用指定类的方法，如：@XXService.x(#root)
+        super.setBeanResolver(new BeanFactoryResolver(beanFactory));
         super.lazyLoadArguments();
     }
 

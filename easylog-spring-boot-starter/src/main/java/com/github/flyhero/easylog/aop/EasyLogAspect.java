@@ -17,6 +17,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -32,13 +35,18 @@ import java.util.*;
 @Aspect
 @Component
 @AllArgsConstructor
-public class EasyLogAspect {
+public class EasyLogAspect implements BeanFactoryAware {
 
     private ILogRecordService logRecordService;
 
     private IOperatorService operatorService;
 
     private EasyLogParser easyLogParser;
+
+    /**
+     * 实现BeanFactoryAware以获取容器中的 beanFactory对象
+     */
+    private BeanFactory beanFactory;
 
     /**
      * 定义切点
@@ -61,7 +69,7 @@ public class EasyLogAspect {
         Method method = methodSignature.getMethod();
         Object[] args = joinPoint.getArgs();
 
-        EasyLogEvaluationContext evaluationContext = new EasyLogEvaluationContext(method, args, new DefaultParameterNameDiscoverer());
+        EasyLogEvaluationContext evaluationContext = new EasyLogEvaluationContext(method, args, new DefaultParameterNameDiscoverer(), this.beanFactory);
         EasyLogOps easyLogOps = parseLogAnnotation(easyLog);
         Map<String, String> map = easyLogParser.processBeforeExec(easyLogOps, evaluationContext);
 
@@ -153,4 +161,8 @@ public class EasyLogAspect {
         return easyLogOps;
     }
 
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
+    }
 }
