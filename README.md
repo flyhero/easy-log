@@ -13,6 +13,9 @@
 
 ![xxx](https://img.shields.io/badge/version-1.0-green) ![xxx](https://img.shields.io/badge/jdk-1.8-green)  ![xxx](https://img.shields.io/badge/springboot-2.3-green)
 
+- GitHub: [https://github.com/flyhero/easy-log](https://gitee.com/flyhero/easy-log)
+- Gitee: [https://gitee.com/flyhero/easy-log](https://gitee.com/flyhero/easy-log)
+
 ## 1. 项目简介
 easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助我们通过注解优雅地聚合项目中的操作日志，对业务代码无侵入。
 
