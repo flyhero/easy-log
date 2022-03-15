@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.github.flyhero.easylog.configuration.EasyLogAutoConfiguration
+  io.github.flyhero.easylog.configuration.EasyLogAutoConfiguration

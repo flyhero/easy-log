@@ -11,9 +11,9 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.github.flyhero</groupId>
+    <groupId>io.github.flyhero</groupId>
     <artifactId>easy-log</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>pom</packaging>
 
 
@@ -34,7 +34,6 @@
         <java.version>1.8</java.version>
 
         <guava.version>29.0-jre</guava.version>
-        <transmittable-thread-local.version>2.12.1</transmittable-thread-local.version>
 
         <slf4j-api.version>1.7.7</slf4j-api.version>
         <logback.version>1.2.3</logback.version>
@@ -73,11 +72,6 @@
                 <version>${guava.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>transmittable-thread-local</artifactId>
-                <version>${transmittable-thread-local.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.slf4j</groupId>
