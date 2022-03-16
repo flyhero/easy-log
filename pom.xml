@@ -100,26 +100,4 @@
         </dependencies>
     </dependencyManagement>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <id>flyhero</id>
-            <name>WangQingFei</name>
-            <email>qfwang666@163.com</email>
-            <url>https://github.com/flyhero</url>
-        </developer>
-    </developers>
-
-    <issueManagement>
-        <system>Github Issue</system>
-        <url>https://github.com/flyhero/easy-log/issues</url>
-    </issueManagement>
-
 </project>
