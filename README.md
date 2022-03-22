@@ -39,8 +39,12 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
  - SpEL解析：直接写表达式解析入参
  - 自定义函数：支持目标方法执行前/后的自定义函数
 
-## 4. 使用方法
-### 4.1 引入依赖
+## 4. 设计图
+
+![](./docs/images/aop-design.png)
+
+## 5. 使用方法
+### 5.1 引入依赖
 在pom.xml中引入：
 ```
 <dependency>
@@ -49,7 +53,7 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
     <version>1.0.0</version>
 </dependency>
 ```
-### 4.2 使用注解
+### 5.2 使用注解
 在要记录操作日志的方法上添加EasyLog注解并填写对应内容：
 
 ```java
@@ -76,7 +80,7 @@ public String test(UserDto userDto) {
 > 2.当不使用自定义函数时，可以直接使用SpEl表达式（如：#name）
 > 如果获取方法的执行结果或错误信息，可使用{{#_result}}或#_result 和 {{#_errMsg}}或#_errMsg。
 
-### 4.3 获取操作者
+### 5.3 获取操作者
 如果不在上述注解中指定租户和操作人，那么可统一设置，方式如下：
 实现 **IOperatorService** 接口，并交给Spring管理。
 ```java
@@ -93,7 +97,7 @@ public class OperatorGetService implements IOperatorService {
 }
 ```
 
-### 4.4 自定义函数
+### 5.4 自定义函数
 当方法参数中，没有你想要的数据时，我们可以通过自定义函数来实现。
 实现 **ICustomFunction** 接口，并交给Spring管理。
 ```java
@@ -114,7 +118,7 @@ public class GetRealNameById implements ICustomFunction {
 }
 ```
 
-### 4.5 接收操作日志
+### 5.5 接收操作日志
 我们接收到操作日志后，可根据实际情况来选择如何处理，是存储到数据库还是发送到MQ都可以。
 实现 **ILogRecordService** 接口，并交给Spring管理。
 ```java
