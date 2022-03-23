@@ -45,6 +45,9 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
 
 ## 5. 使用方法
 ### 5.1 引入依赖
+
+已上传到中央仓库：https://search.maven.org/search?q=g:io.github.flyhero
+
 在pom.xml中引入：
 ```
 <dependency>
