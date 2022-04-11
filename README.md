@@ -53,7 +53,7 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
 <dependency>
     <groupId>io.github.flyhero</groupId>
     <artifactId>easylog-spring-boot-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 ### 5.2 使用注解
