@@ -17,10 +17,8 @@ import java.lang.reflect.Method;
  */
 public class EasyLogEvaluationContext extends MethodBasedEvaluationContext {
 
-    public EasyLogEvaluationContext(Method method, Object[] arguments, ParameterNameDiscoverer parameterNameDiscoverer, BeanFactory beanFactory) {
+    public EasyLogEvaluationContext(Method method, Object[] arguments, ParameterNameDiscoverer parameterNameDiscoverer) {
         super(null, method, arguments, parameterNameDiscoverer);
-        // setBeanResolver 主要用于支持SpEL模板中调用指定类的方法，如：@XXService.x(#root)
-        super.setBeanResolver(new BeanFactoryResolver(beanFactory));
         super.lazyLoadArguments();
     }
 
@@ -32,6 +30,6 @@ public class EasyLogEvaluationContext extends MethodBasedEvaluationContext {
      */
     public void putResult(String errMsg, Object result) {
         super.setVariable(EasyLogConsts.ERR_MSG, errMsg);
-        super.setVariable(EasyLogConsts.RESULT, JsonUtils.toJSONString(result));
+        super.setVariable(EasyLogConsts.RESULT, result);
     }
 }

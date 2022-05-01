@@ -1,6 +1,5 @@
 package io.github.flyhero.easylog.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**

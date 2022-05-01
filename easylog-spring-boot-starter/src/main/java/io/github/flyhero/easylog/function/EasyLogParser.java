@@ -1,10 +1,16 @@
 package io.github.flyhero.easylog.function;
 
 import io.github.flyhero.easylog.constants.EasyLogConsts;
+import io.github.flyhero.easylog.context.EasyLogCachedExpressionEvaluator;
 import io.github.flyhero.easylog.exception.EasyLogException;
 import io.github.flyhero.easylog.model.EasyLogOps;
 import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.expression.AnnotatedElementKey;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -24,30 +30,31 @@ import java.util.stream.Collectors;
  * @author WangQingFei(qfwang666 @ 163.com)
  * @date 2022/3/1 9:46
  */
-@AllArgsConstructor
-public class EasyLogParser {
+public class EasyLogParser implements BeanFactoryAware {
 
+    /**
+     * 实现BeanFactoryAware以获取容器中的 beanFactory对象
+     */
+    private BeanFactory beanFactory;
 
     private static final Pattern PATTERN = Pattern.compile("\\{\\s*(\\w*)\\s*\\{(.*?)}}");
 
+    @Autowired
     private IFunctionService customFunctionService;
 
-    /**
-     * @param easyLogOps
-     * @param funcValBeforeExecMap
-     * @param evaluationContext
-     * @return
-     */
-    public Map<String, String> process(EasyLogOps easyLogOps, Map<String, String> funcValBeforeExecMap, EvaluationContext evaluationContext, Method method) {
+    private final EasyLogCachedExpressionEvaluator cachedExpressionEvaluator = new EasyLogCachedExpressionEvaluator();
+
+    public Map<String, String> process(EasyLogOps easyLogOps, Map<String, String> funcValBeforeExecMap, Method method, Object[] args, Class<?> targetClass, String errMsg, Object result) {
         HashMap<String, String> map = new HashMap<>();
         List<String> expressTemplate = getExpressTemplate(easyLogOps);
-        ExpressionParser expressionParser = new SpelExpressionParser();
+        AnnotatedElementKey elementKey = new AnnotatedElementKey(method, targetClass);
+        EvaluationContext evaluationContext = cachedExpressionEvaluator.createEvaluationContext(method, args, beanFactory, errMsg, result);
         for (String template : expressTemplate) {
             if (template.contains("{")) {
                 Matcher matcher = PATTERN.matcher(template);
                 StringBuffer parsedStr = new StringBuffer();
                 while (matcher.find()) {
-                    Object value = expressionParser.parseExpression(matcher.group(2)).getValue(evaluationContext, Object.class);
+                    Object value = cachedExpressionEvaluator.parseExpression(matcher.group(2), elementKey, evaluationContext);
                     String funcName = matcher.group(1);
                     String param = value == null ? "" : value.toString();
                     String functionVal = ObjectUtils.isEmpty(funcName) ? param : getFunctionVal(funcValBeforeExecMap, funcName, param);
@@ -58,7 +65,7 @@ public class EasyLogParser {
             } else {
                 Object value = null;
                 try {
-                    value = expressionParser.parseExpression(template).getValue(evaluationContext, Object.class);
+                    value = cachedExpressionEvaluator.parseExpression(template, elementKey, evaluationContext);
                 } catch (Exception e) {
                     throw new EasyLogException(method.getDeclaringClass().getName() + "." + method.getName() + "下 EasyLog 解析失败: [" + template + "], 请检查是否符合SpEl表达式规范！");
                 }
@@ -72,13 +79,12 @@ public class EasyLogParser {
     /**
      * 获取执行前的自定义函数值
      *
-     * @param easyLogOps
-     * @param evaluationContext
      * @return
      */
-    public Map<String, String> processBeforeExec(EasyLogOps easyLogOps, EvaluationContext evaluationContext) {
+    public Map<String, String> processBeforeExec(EasyLogOps easyLogOps,  Method method, Object[] args, Class<?> targetClass) {
         HashMap<String, String> map = new HashMap<>();
-        ExpressionParser expressionParser = new SpelExpressionParser();
+        AnnotatedElementKey elementKey = new AnnotatedElementKey(method, targetClass);
+        EvaluationContext evaluationContext = cachedExpressionEvaluator.createEvaluationContext(method, args, beanFactory, null, null);
         List<String> templates = getExpressTemplate(easyLogOps);
         for (String template : templates) {
             if (template.contains("{")) {
@@ -90,7 +96,7 @@ public class EasyLogParser {
                     }
                     String funcName = matcher.group(1);
                     if (customFunctionService.executeBefore(funcName)) {
-                        Object value = expressionParser.parseExpression(param).getValue(evaluationContext, Object.class);
+                        Object value = cachedExpressionEvaluator.parseExpression(param, elementKey, evaluationContext);
                         String apply = customFunctionService.apply(funcName, value == null ? null : value.toString());
                         map.put(getFunctionMapKey(funcName, param), apply);
                     }
@@ -142,5 +148,11 @@ public class EasyLogParser {
         ArrayList<String> list = Lists.newArrayList(easyLogOps.getBizNo(), easyLogOps.getDetails(),
                 easyLogOps.getOperator(), easyLogOps.getTenant(), easyLogOps.getContent(), easyLogOps.getFail(), easyLogOps.getCondition());
         return list.stream().filter(s -> !ObjectUtils.isEmpty(s)).collect(Collectors.toList());
+    }
+
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        this.beanFactory = beanFactory;
     }
 }

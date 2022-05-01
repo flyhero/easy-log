@@ -16,6 +16,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -34,18 +35,13 @@ import java.util.*;
 @Aspect
 @Component
 @AllArgsConstructor
-public class EasyLogAspect implements BeanFactoryAware {
+public class EasyLogAspect {
 
     private ILogRecordService logRecordService;
 
     private IOperatorService operatorService;
 
     private EasyLogParser easyLogParser;
-
-    /**
-     * 实现BeanFactoryAware以获取容器中的 beanFactory对象
-     */
-    private BeanFactory beanFactory;
 
     /**
      * 定义切点
@@ -67,10 +63,11 @@ public class EasyLogAspect implements BeanFactoryAware {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
         Object[] args = joinPoint.getArgs();
+        Object target = joinPoint.getTarget();
+        Class<?> targetClass = AopUtils.getTargetClass(target);
 
-        EasyLogEvaluationContext evaluationContext = new EasyLogEvaluationContext(method, args, new DefaultParameterNameDiscoverer(), this.beanFactory);
         EasyLogOps easyLogOps = parseLogAnnotation(easyLog);
-        Map<String, String> map = easyLogParser.processBeforeExec(easyLogOps, evaluationContext);
+        Map<String, String> map = easyLogParser.processBeforeExec(easyLogOps, method, args, targetClass);
 
         Object result = null;
         MethodExecuteResult executeResult = new MethodExecuteResult(true);
@@ -80,12 +77,12 @@ public class EasyLogAspect implements BeanFactoryAware {
         } catch (Throwable e) {
             executeResult.exception(e);
         }
-        evaluationContext.putResult(executeResult.getErrMsg(), result);
+//        evaluationContext.putResult(executeResult.getErrMsg(), result);
 
         if (!executeResult.isSuccess() && ObjectUtils.isEmpty(easyLogOps.getFail())) {
             log.warn("[{}] 方法执行失败，EasyLog 失败模板没有配置", method.getName());
         } else {
-            Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, evaluationContext, method);
+            Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, method, args, targetClass, executeResult.getErrMsg(), result);
             sendLog(easyLogOps, result, executeResult, templateMap);
         }
         //抛出异常
@@ -160,8 +157,4 @@ public class EasyLogAspect implements BeanFactoryAware {
         return easyLogOps;
     }
 
-    @Override
-    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = beanFactory;
-    }
 }

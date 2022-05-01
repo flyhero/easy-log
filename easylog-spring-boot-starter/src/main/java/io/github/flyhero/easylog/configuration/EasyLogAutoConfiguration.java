@@ -1,5 +1,6 @@
 package io.github.flyhero.easylog.configuration;
 
+import io.github.flyhero.easylog.context.EasyLogCachedExpressionEvaluator;
 import io.github.flyhero.easylog.function.CustomFunctionFactory;
 import io.github.flyhero.easylog.function.EasyLogParser;
 import io.github.flyhero.easylog.function.impl.DefaultCustomFunction;
@@ -58,8 +59,8 @@ public class EasyLogAutoConfiguration {
     }
 
     @Bean
-    public EasyLogParser easyLogParser(IFunctionService functionService){
-        return new EasyLogParser(functionService);
+    public EasyLogParser easyLogParser(){
+        return new EasyLogParser();
     }
 
     @Bean
