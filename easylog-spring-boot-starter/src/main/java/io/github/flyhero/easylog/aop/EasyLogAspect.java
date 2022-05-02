@@ -1,10 +1,10 @@
 package io.github.flyhero.easylog.aop;
 
 import io.github.flyhero.easylog.annotation.EasyLog;
-import io.github.flyhero.easylog.context.EasyLogEvaluationContext;
+import io.github.flyhero.easylog.configuration.EasyLogProperties;
 import io.github.flyhero.easylog.function.EasyLogParser;
-import io.github.flyhero.easylog.model.EasyLogOps;
 import io.github.flyhero.easylog.model.EasyLogInfo;
+import io.github.flyhero.easylog.model.EasyLogOps;
 import io.github.flyhero.easylog.model.MethodExecuteResult;
 import io.github.flyhero.easylog.service.ILogRecordService;
 import io.github.flyhero.easylog.service.IOperatorService;
@@ -17,15 +17,12 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author qfwang666@163.com
@@ -42,6 +39,8 @@ public class EasyLogAspect {
     private IOperatorService operatorService;
 
     private EasyLogParser easyLogParser;
+
+    private EasyLogProperties easyLogProperties;
 
     /**
      * 定义切点
@@ -77,7 +76,6 @@ public class EasyLogAspect {
         } catch (Throwable e) {
             executeResult.exception(e);
         }
-//        evaluationContext.putResult(executeResult.getErrMsg(), result);
 
         if (!executeResult.isSuccess() && ObjectUtils.isEmpty(easyLogOps.getFail())) {
             log.warn("[{}] 方法执行失败，EasyLog 失败模板没有配置", method.getName());
@@ -95,7 +93,8 @@ public class EasyLogAspect {
     private void sendLog(EasyLogOps easyLogOps, Object result, MethodExecuteResult executeResult, Map<String, String> templateMap) {
         EasyLogInfo easyLogInfo = createEasyLogInfo(templateMap, easyLogOps);
         if (Objects.nonNull(easyLogInfo)) {
-            easyLogInfo.setContent(executeResult.isSuccess() ? templateMap.get(easyLogOps.getContent()) : templateMap.get(easyLogOps.getFail()));
+            easyLogInfo.setPlatform(easyLogProperties.getPlatform());
+            easyLogInfo.setContent(executeResult.isSuccess() ? templateMap.get(easyLogOps.getSuccess()) : templateMap.get(easyLogOps.getFail()));
             easyLogInfo.setSuccess(executeResult.isSuccess());
             easyLogInfo.setResult(JsonUtils.toJSONString(result));
             easyLogInfo.setErrorMsg(executeResult.getErrMsg());
@@ -145,7 +144,7 @@ public class EasyLogAspect {
      */
     private EasyLogOps parseLogAnnotation(EasyLog easyLog) {
         EasyLogOps easyLogOps = new EasyLogOps();
-        easyLogOps.setContent(easyLog.content());
+        easyLogOps.setSuccess(easyLog.success());
         easyLogOps.setFail(easyLog.fail());
         easyLogOps.setModule(easyLog.module());
         easyLogOps.setType(easyLog.type());

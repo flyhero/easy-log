@@ -2,10 +2,16 @@ package io.github.flyhero.easylog.model;
 
 import io.github.flyhero.easylog.compare.FieldInfo;
 import lombok.Data;
+
 import java.util.List;
 
 @Data
 public class EasyLogInfo {
+
+    /**
+     * 平台
+     */
+    private String platform;
 
     /**
      * 租户

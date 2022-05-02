@@ -15,7 +15,7 @@ public class EasyLogOps {
 
     private String type;
 
-    private String content;
+    private String success;
 
     private String fail;
 

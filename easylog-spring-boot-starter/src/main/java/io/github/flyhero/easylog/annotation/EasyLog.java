@@ -37,9 +37,9 @@ public @interface EasyLog {
     String bizNo() default "";
 
     /**
-     * 内容
+     * 成功模板
      */
-    String content();
+    String success();
 
     /**
      * 失败模板

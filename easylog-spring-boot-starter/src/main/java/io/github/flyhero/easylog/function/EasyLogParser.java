@@ -1,19 +1,16 @@
 package io.github.flyhero.easylog.function;
 
+import com.google.common.collect.Lists;
 import io.github.flyhero.easylog.constants.EasyLogConsts;
 import io.github.flyhero.easylog.context.EasyLogCachedExpressionEvaluator;
 import io.github.flyhero.easylog.exception.EasyLogException;
 import io.github.flyhero.easylog.model.EasyLogOps;
-import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.expression.AnnotatedElementKey;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
@@ -146,7 +143,7 @@ public class EasyLogParser implements BeanFactoryAware {
      */
     private List<String> getExpressTemplate(EasyLogOps easyLogOps) {
         ArrayList<String> list = Lists.newArrayList(easyLogOps.getBizNo(), easyLogOps.getDetails(),
-                easyLogOps.getOperator(), easyLogOps.getTenant(), easyLogOps.getContent(), easyLogOps.getFail(), easyLogOps.getCondition());
+                easyLogOps.getOperator(), easyLogOps.getTenant(), easyLogOps.getSuccess(), easyLogOps.getFail(), easyLogOps.getCondition());
         return list.stream().filter(s -> !ObjectUtils.isEmpty(s)).collect(Collectors.toList());
     }
 

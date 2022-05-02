@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TestServiceImpl implements ITestService {
 
-    @EasyLog(module = "用户管理", type = OperateType.UPDATE, content = "更新了用户信息：{{#userDto.name}}")
+    @EasyLog(module = "用户管理", type = OperateType.UPDATE, success = "更新了用户信息：{{#userDto.name}}")
     @Override
     public UserEntity update(UserDto userDto) {
         UserEntity userEntity = new UserEntity();

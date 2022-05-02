@@ -53,15 +53,26 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
 <dependency>
     <groupId>io.github.flyhero</groupId>
     <artifactId>easylog-spring-boot-starter</artifactId>
-    <version>1.0.1</version>
+    <version>2.0.0</version>
 </dependency>
 ```
-### 5.2 使用注解
+### 5.2 配置
+
+```properties
+# 默认开启可不填，禁用是填 false
+easylog.enable=true
+# 当有多个服务用时，用于区分不同服务下的操作日志，默认取 spring.application.name
+easylog.platform=easylog-example
+# 是否在控制台打印 banner,默认打印
+easylog.banner=false
+```
+
+### 5.3 使用注解
 在要记录操作日志的方法上添加EasyLog注解并填写对应内容：
 
 ```java
 @EasyLog(module = "用户模块", operator = "{{#userDto.toString()}}", type = "新增",
-        content = "测试 {functionName{#userDto.name}}",
+        success = "测试 {functionName{#userDto.name}}",
         condition = "{{#userDto.name == 'easylog'}}")
 public String test(UserDto userDto) {
     return "test";
@@ -74,7 +85,7 @@ public String test(UserDto userDto) {
 | module      | 模块，区分不同业务模块          | 否         | 否   |
 | type | 操作类型，形如：增删改查        | 否         | 否   |
 | bizNo       | 业务编号，便于查询   | 是         | 否   |
-| content     | 日志模板内容                    | 是         | 是   |
+| success     | 成功日志模板内容                  | 是         | 是   |
 | fail        | 操作失败时的模板内容            | 是         | 否   |
 | detail      | 额外的记录信息                  | 是         | 否   |
 | condition   | 是否记录的条件 (默认:true 记录) | 是         | 否   |
@@ -83,7 +94,7 @@ public String test(UserDto userDto) {
 > 2.当不使用自定义函数时，可以直接使用SpEl表达式（如：#name）
 > 如果获取方法的执行结果或错误信息，可使用{{#_result}}或#_result 和 {{#_errMsg}}或#_errMsg。
 
-### 5.3 获取操作者
+### 5.4 获取操作者
 如果不在上述注解中指定租户和操作人，那么可统一设置，方式如下：
 实现 **IOperatorService** 接口，并交给Spring管理。
 ```java
@@ -100,7 +111,7 @@ public class OperatorGetService implements IOperatorService {
 }
 ```
 
-### 5.4 自定义函数
+### 5.5 自定义函数
 当方法参数中，没有你想要的数据时，我们可以通过自定义函数来实现。
 实现 **ICustomFunction** 接口，并交给Spring管理。
 ```java
@@ -121,7 +132,7 @@ public class GetRealNameById implements ICustomFunction {
 }
 ```
 
-### 5.5 接收操作日志
+### 5.6 接收操作日志
 我们接收到操作日志后，可根据实际情况来选择如何处理，是存储到数据库还是发送到MQ都可以。
 实现 **ILogRecordService** 接口，并交给Spring管理。
 ```java
