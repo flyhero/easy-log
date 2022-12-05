@@ -90,7 +90,10 @@ public String test(UserDto userDto) {
 | detail      | 额外的记录信息                  | 是         | 否   |
 | condition   | 是否记录的条件 (默认:true 记录) | 是         | 否   |
 
-> 注意: 1.当使用自定义函数时，必须使用双花括号包起来（如：{getNameById{#id}} ），便于解析。
+> 注意: 
+> 
+> 1.当使用自定义函数时，必须使用双花括号包起来（如：{getNameById{#id}} ），便于解析。
+> 
 > 2.当不使用自定义函数时，可以直接使用SpEl表达式（如：#name）
 > 如果获取方法的执行结果或错误信息，可使用{{#_result}}或#_result 和 {{#_errMsg}}或#_errMsg。
 
@@ -102,6 +105,9 @@ public String test(UserDto userDto) {
 public class OperatorGetService implements IOperatorService {
     @Override
     public String getOperator() {
+        //可从请求头中获取token解析用户
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        String token = request.getHeader("token");
         return "admin";
     }
     @Override
@@ -145,3 +151,30 @@ public class OpLogRecordService implements ILogRecordService {
     }
 }
 ```
+
+## QA
+### 1、同一类中互相调用含 @Easylog 注解的方法，只有一条日志
+这是因为 Spring AOP 无法拦截内部方法调用。解决方案：
+
+1、修改，不要出现“自调用”的情况，这是Spring文档中推荐的“最佳”方案；
+
+2、若一定要自调用，那么在 SpringBoot 启动类中加一个注解：
+```java
+@EnableAspectJAutoProxy(exposeProxy = true)
+```
+然后将自调用的方法, this.test2() 替换为：((当前类) AopContext.currentProxy()).test2();
+
+### 2、EasyLog 注解中 许多方法返回的是 String，如何存储更多的信息？
+
+可将String当作json字符串，比如 操作者 operator 是String类型，那么它可以存储以下字符串信息：
+```text
+{"id": 1, "name": "admin", "ip": "127.0.0.1"}
+```
+
+## Change Log & TODO
+
+|版本| 内容 |状态 |
+|----|----|----|
+| 2.0.0 | 增加配置，提升性能，不兼容低版本 | 推荐使用|
+| 1.0.1 | 基本型，性能欠佳 | 不推荐|
+| 1.0.0 | 基本型，有bug，性能欠佳 | 不要使用|
