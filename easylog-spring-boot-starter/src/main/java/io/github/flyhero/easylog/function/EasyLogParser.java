@@ -30,7 +30,8 @@ import java.util.stream.Collectors;
 public class EasyLogParser implements BeanFactoryAware {
 
     /**
-     * 实现BeanFactoryAware以获取容器中的 beanFactory对象
+     * 实现BeanFactoryAware以获取容器中的 beanFactory对象,
+     * 拿到beanFactory后便可以获取容器中的bean,用于Spel表达式的解析
      */
     private BeanFactory beanFactory;
 
