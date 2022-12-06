@@ -9,6 +9,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Repeatable(EasyLogs.class)
 public @interface EasyLog {
 
     /**

@@ -1,12 +1,15 @@
 package io.github.flyhero.easylog.example.controller;
 
 import io.github.flyhero.easylog.annotation.EasyLog;
+import io.github.flyhero.easylog.annotation.EasyLogs;
 import io.github.flyhero.easylog.example.constants.OperateType;
 import io.github.flyhero.easylog.example.dto.UserDto;
 import io.github.flyhero.easylog.example.entity.UserEntity;
 import io.github.flyhero.easylog.example.service.ITestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author WangQingFei(qfwang666 @ 163.com)
@@ -72,5 +75,26 @@ public class TestController {
     public String test6(@RequestBody UserDto userDto) {
         UserEntity user = testService.update(userDto);
         return user.getName();
+    }
+
+    @PostMapping("/test7")
+    public String test7(@RequestBody UserDto userDto) {
+        testService.internalMethod(userDto);
+        return "";
+    }
+
+    @GetMapping("/test8")
+    @EasyLogs({
+            @EasyLog(module = "测试8", type = OperateType.UPDATE, success = "测试多个日志-1： {getBeforeRealNameByName{#name}}"),
+            @EasyLog(module = "测试8", type = OperateType.SELECT, success = "测试多个日志-2： {getBeforeRealNameByName{#name}}")
+    })
+    public String test8(String name){
+        return name;
+    }
+
+    @GetMapping("/test9")
+    public String test9(String name){
+        testService.manyLog(name);
+        return name;
     }
 }

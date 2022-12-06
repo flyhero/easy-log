@@ -15,10 +15,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -42,22 +39,24 @@ public class EasyLogParser implements BeanFactoryAware {
 
     private final EasyLogCachedExpressionEvaluator cachedExpressionEvaluator = new EasyLogCachedExpressionEvaluator();
 
-    public Map<String, String> process(EasyLogOps easyLogOps, Map<String, String> funcValBeforeExecMap, Method method, Object[] args, Class<?> targetClass, String errMsg, Object result) {
+    public Map<String, String> processAfterExec(List<String> expressTemplate, Map<String, String> funcValBeforeExecMap, Method method, Object[] args, Class<?> targetClass, String errMsg, Object result) {
         HashMap<String, String> map = new HashMap<>();
-        List<String> expressTemplate = getExpressTemplate(easyLogOps);
         AnnotatedElementKey elementKey = new AnnotatedElementKey(method, targetClass);
         EvaluationContext evaluationContext = cachedExpressionEvaluator.createEvaluationContext(method, args, beanFactory, errMsg, result);
         for (String template : expressTemplate) {
             if (template.contains("{")) {
                 Matcher matcher = PATTERN.matcher(template);
                 StringBuffer parsedStr = new StringBuffer();
+                //匹配到字符串中的 {*{*}}
                 while (matcher.find()) {
                     Object value = cachedExpressionEvaluator.parseExpression(matcher.group(2), elementKey, evaluationContext);
                     String funcName = matcher.group(1);
                     String param = value == null ? "" : value.toString();
                     String functionVal = ObjectUtils.isEmpty(funcName) ? param : getFunctionVal(funcValBeforeExecMap, funcName, param);
+                    // 将 functionVal 替换 {*{*}}，然后将 从头截至到 匹配的最后字符 之间的字符串，放入 parsedStr 中
                     matcher.appendReplacement(parsedStr, functionVal);
                 }
+                // 将 从匹配的最后字符到整个字符串最后 之间的字符串，追加到parsedStr中
                 matcher.appendTail(parsedStr);
                 map.put(template, parsedStr.toString());
             } else {
@@ -79,25 +78,25 @@ public class EasyLogParser implements BeanFactoryAware {
      *
      * @return
      */
-    public Map<String, String> processBeforeExec(EasyLogOps easyLogOps,  Method method, Object[] args, Class<?> targetClass) {
+    public Map<String, String> processBeforeExec(List<String> templates, Method method, Object[] args, Class<?> targetClass) {
         HashMap<String, String> map = new HashMap<>();
         AnnotatedElementKey elementKey = new AnnotatedElementKey(method, targetClass);
         EvaluationContext evaluationContext = cachedExpressionEvaluator.createEvaluationContext(method, args, beanFactory, null, null);
-        List<String> templates = getExpressTemplate(easyLogOps);
         for (String template : templates) {
-            if (template.contains("{")) {
-                Matcher matcher = PATTERN.matcher(template);
-                while (matcher.find()) {
-                    String param = matcher.group(2);
-                    if (param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.ERR_MSG) || param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.RESULT)) {
-                        continue;
-                    }
-                    String funcName = matcher.group(1);
-                    if (customFunctionService.executeBefore(funcName)) {
-                        Object value = cachedExpressionEvaluator.parseExpression(param, elementKey, evaluationContext);
-                        String apply = customFunctionService.apply(funcName, value == null ? null : value.toString());
-                        map.put(getFunctionMapKey(funcName, param), apply);
-                    }
+            if (!template.contains("{")) {
+                continue;
+            }
+            Matcher matcher = PATTERN.matcher(template);
+            while (matcher.find()) {
+                String param = matcher.group(2);
+                if (param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.ERR_MSG) || param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.RESULT)) {
+                    continue;
+                }
+                String funcName = matcher.group(1);
+                if (customFunctionService.executeBefore(funcName)) {
+                    Object value = cachedExpressionEvaluator.parseExpression(param, elementKey, evaluationContext);
+                    String apply = customFunctionService.apply(funcName, value == null ? null : value.toString());
+                    map.put(getFunctionMapKey(funcName, param), apply);
                 }
             }
         }
@@ -135,19 +134,6 @@ public class EasyLogParser implements BeanFactoryAware {
 
         return val;
     }
-
-    /**
-     * 获取不为空的待解析模板
-     *
-     * @param easyLogOps
-     * @return
-     */
-    private List<String> getExpressTemplate(EasyLogOps easyLogOps) {
-        ArrayList<String> list = Lists.newArrayList(easyLogOps.getBizNo(), easyLogOps.getDetails(),
-                easyLogOps.getOperator(), easyLogOps.getTenant(), easyLogOps.getSuccess(), easyLogOps.getFail(), easyLogOps.getCondition());
-        return list.stream().filter(s -> !ObjectUtils.isEmpty(s)).collect(Collectors.toList());
-    }
-
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {

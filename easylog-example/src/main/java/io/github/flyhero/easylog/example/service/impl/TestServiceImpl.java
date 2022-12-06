@@ -1,6 +1,7 @@
 package io.github.flyhero.easylog.example.service.impl;
 
 import io.github.flyhero.easylog.annotation.EasyLog;
+import io.github.flyhero.easylog.annotation.EasyLogs;
 import io.github.flyhero.easylog.context.ApplicationContextHolder;
 import io.github.flyhero.easylog.example.constants.OperateType;
 import io.github.flyhero.easylog.example.dto.UserDto;
@@ -42,5 +43,14 @@ public class TestServiceImpl implements ITestService {
         //        ITestService bean = ApplicationContextHolder.getBean(ITestService.class);
         TestServiceImpl testService = (TestServiceImpl) AopContext.currentProxy();
         testService.update(userDto);
+    }
+
+    @EasyLogs({
+            @EasyLog(module = "用户管理", type = OperateType.UPDATE, success = "测试多个日志-1： {getBeforeRealNameByName{#name}}"),
+            @EasyLog(module = "用户管理", type = OperateType.SELECT, success = "测试多个日志-2： {getBeforeRealNameByName{#name}}")
+    })
+    @Override
+    public void manyLog(String name) {
+
     }
 }

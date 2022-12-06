@@ -17,4 +17,6 @@ public interface ITestService {
     UserEntity update(UserDto userDto);
 
     void internalMethod(UserDto userDto);
+
+    void manyLog(String name);
 }

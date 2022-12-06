@@ -16,7 +16,7 @@ public class EasyLogEvaluationContext extends MethodBasedEvaluationContext {
 
     public EasyLogEvaluationContext(Method method, Object[] arguments, ParameterNameDiscoverer parameterNameDiscoverer) {
         super(null, method, arguments, parameterNameDiscoverer);
-        super.lazyLoadArguments();
+//        super.lazyLoadArguments();
     }
 
     /**

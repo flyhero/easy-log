@@ -1,5 +1,6 @@
 package io.github.flyhero.easylog.aop;
 
+import com.google.common.collect.Lists;
 import io.github.flyhero.easylog.annotation.EasyLog;
 import io.github.flyhero.easylog.configuration.EasyLogProperties;
 import io.github.flyhero.easylog.function.EasyLogParser;
@@ -18,11 +19,12 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author qfwang666@163.com
@@ -45,7 +47,7 @@ public class EasyLogAspect {
     /**
      * 定义切点
      */
-    @Pointcut("@annotation(io.github.flyhero.easylog.annotation.EasyLog)")
+    @Pointcut("@annotation(io.github.flyhero.easylog.annotation.EasyLog) || @annotation(io.github.flyhero.easylog.annotation.EasyLogs)")
     public void pointCut() {
     }
 
@@ -53,11 +55,10 @@ public class EasyLogAspect {
      * 环绕通知
      *
      * @param joinPoint
-     * @param easyLog
      * @return
      */
-    @Around("pointCut() && @annotation(easyLog)")
-    public Object around(ProceedingJoinPoint joinPoint, EasyLog easyLog) throws Throwable {
+    @Around("pointCut()")
+    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
 
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method method = methodSignature.getMethod();
@@ -65,8 +66,16 @@ public class EasyLogAspect {
         Object target = joinPoint.getTarget();
         Class<?> targetClass = AopUtils.getTargetClass(target);
 
-        EasyLogOps easyLogOps = parseLogAnnotation(easyLog);
-        Map<String, String> map = easyLogParser.processBeforeExec(easyLogOps, method, args, targetClass);
+        EasyLog[] easyLogs = method.getAnnotationsByType(EasyLog.class);
+
+        List<EasyLogOps> easyLogOpsList = new ArrayList<>();
+        for (EasyLog easyLog : easyLogs) {
+            easyLogOpsList.add(parseLogAnnotation(easyLog));
+        }
+
+        List<String> expressTemplate = getExpressTemplate(easyLogOpsList);
+
+        Map<String, String> customFunctionExecResultMap = easyLogParser.processBeforeExec(expressTemplate, method, args, targetClass);
 
         Object result = null;
         MethodExecuteResult executeResult = new MethodExecuteResult(true);
@@ -77,11 +86,12 @@ public class EasyLogAspect {
             executeResult.exception(e);
         }
 
-        if (!executeResult.isSuccess() && ObjectUtils.isEmpty(easyLogOps.getFail())) {
+        boolean existsNoFailTemp = easyLogOpsList.stream().anyMatch(easyLogOps -> ObjectUtils.isEmpty(easyLogOps.getFail()));
+        if (!executeResult.isSuccess() && existsNoFailTemp) {
             log.warn("[{}] 方法执行失败，EasyLog 失败模板没有配置", method.getName());
         } else {
-            Map<String, String> templateMap = easyLogParser.process(easyLogOps, map, method, args, targetClass, executeResult.getErrMsg(), result);
-            sendLog(easyLogOps, result, executeResult, templateMap);
+            Map<String, String> templateMap = easyLogParser.processAfterExec(expressTemplate, customFunctionExecResultMap, method, args, targetClass, executeResult.getErrMsg(), result);
+            sendLog(easyLogOpsList, result, executeResult, templateMap);
         }
         //抛出异常
         if (!executeResult.isSuccess()){
@@ -90,17 +100,22 @@ public class EasyLogAspect {
         return result;
     }
 
-    private void sendLog(EasyLogOps easyLogOps, Object result, MethodExecuteResult executeResult, Map<String, String> templateMap) {
-        EasyLogInfo easyLogInfo = createEasyLogInfo(templateMap, easyLogOps);
-        if (Objects.nonNull(easyLogInfo)) {
-            easyLogInfo.setPlatform(easyLogProperties.getPlatform());
-            easyLogInfo.setContent(executeResult.isSuccess() ? templateMap.get(easyLogOps.getSuccess()) : templateMap.get(easyLogOps.getFail()));
-            easyLogInfo.setSuccess(executeResult.isSuccess());
-            easyLogInfo.setResult(JsonUtils.toJSONString(result));
-            easyLogInfo.setErrorMsg(executeResult.getErrMsg());
-            easyLogInfo.setExecuteTime(executeResult.getExecuteTime());
-            easyLogInfo.setOperateTime(executeResult.getOperateTime());
-            logRecordService.record(easyLogInfo);
+    /**
+     * 发送日志
+     *
+     * @param easyLogOps
+     * @param result
+     * @param executeResult
+     * @param templateMap
+     */
+    private void sendLog(List<EasyLogOps> easyLogOps, Object result, MethodExecuteResult executeResult, Map<String, String> templateMap) {
+        List<EasyLogInfo> easyLogInfos = createEasyLogInfo(templateMap, easyLogOps, executeResult);
+        if (!CollectionUtils.isEmpty(easyLogInfos)) {
+            easyLogInfos.forEach(easyLogInfo -> {
+                easyLogInfo.setPlatform(easyLogProperties.getPlatform());
+                easyLogInfo.setResult(JsonUtils.toJSONString(result));
+                logRecordService.record(easyLogInfo);
+            });
         }
     }
 
@@ -108,31 +123,43 @@ public class EasyLogAspect {
      * 创建操作日志实体
      *
      * @param templateMap
-     * @param easyLogOps
+     * @param easyLogOpsList
      * @return
      */
-    private EasyLogInfo createEasyLogInfo(Map<String, String> templateMap, EasyLogOps easyLogOps) {
-        //记录条件为 false，则不记录
-        if ("false".equalsIgnoreCase(templateMap.get(easyLogOps.getCondition()))) {
-            return null;
+    private List<EasyLogInfo> createEasyLogInfo(Map<String, String> templateMap, List<EasyLogOps> easyLogOpsList, MethodExecuteResult executeResult) {
+        List<EasyLogInfo> easyLogInfos = new ArrayList<>();
+        for (EasyLogOps easyLogOps : easyLogOpsList) {
+            //记录条件为 false，则不记录
+            if ("false".equalsIgnoreCase(templateMap.get(easyLogOps.getCondition()))) {
+                continue;
+            }
+
+            EasyLogInfo easyLogInfo = new EasyLogInfo();
+            String tenant = templateMap.get(easyLogOps.getTenant());
+            if (ObjectUtils.isEmpty(tenant)) {
+                tenant = operatorService.getTenant();
+            }
+            easyLogInfo.setTenant(tenant);
+            String operator = templateMap.get(easyLogOps.getOperator());
+            if (ObjectUtils.isEmpty(operator)) {
+                operator = operatorService.getOperator();
+            }
+            easyLogInfo.setModule(easyLogOps.getModule());
+            easyLogInfo.setType(easyLogOps.getType());
+            easyLogInfo.setOperator(operator);
+            easyLogInfo.setBizNo(templateMap.get(easyLogOps.getBizNo()));
+            easyLogInfo.setDetails(templateMap.get(easyLogOps.getDetails()));
+
+            easyLogInfo.setContent(executeResult.isSuccess() ? templateMap.get(easyLogOps.getSuccess()) : templateMap.get(easyLogOps.getFail()));
+            easyLogInfo.setSuccess(executeResult.isSuccess());
+            easyLogInfo.setErrorMsg(executeResult.getErrMsg());
+            easyLogInfo.setExecuteTime(executeResult.getExecuteTime());
+            easyLogInfo.setOperateTime(executeResult.getOperateTime());
+
+            easyLogInfos.add(easyLogInfo);
         }
 
-        EasyLogInfo easyLogInfo = new EasyLogInfo();
-        String tenant = templateMap.get(easyLogOps.getTenant());
-        if (ObjectUtils.isEmpty(tenant)) {
-            tenant = operatorService.getTenant();
-        }
-        easyLogInfo.setTenant(tenant);
-        String operator = templateMap.get(easyLogOps.getOperator());
-        if (ObjectUtils.isEmpty(operator)) {
-            operator = operatorService.getOperator();
-        }
-        easyLogInfo.setModule(easyLogOps.getModule());
-        easyLogInfo.setType(easyLogOps.getType());
-        easyLogInfo.setOperator(operator);
-        easyLogInfo.setBizNo(templateMap.get(easyLogOps.getBizNo()));
-        easyLogInfo.setDetails(templateMap.get(easyLogOps.getDetails()));
-        return easyLogInfo;
+        return easyLogInfos;
     }
 
 
@@ -156,4 +183,19 @@ public class EasyLogAspect {
         return easyLogOps;
     }
 
+    /**
+     * 获取不为空的待解析模板
+     *
+     * @param easyLogOpsList
+     * @return
+     */
+    private List<String> getExpressTemplate(List<EasyLogOps> easyLogOpsList) {
+        Set<String> set = new HashSet<>();
+        for (EasyLogOps easyLogOps : easyLogOpsList) {
+            set.addAll(Lists.newArrayList(easyLogOps.getBizNo(), easyLogOps.getDetails(),
+                    easyLogOps.getOperator(), easyLogOps.getTenant(), easyLogOps.getSuccess(), easyLogOps.getFail(),
+                    easyLogOps.getCondition()));
+        }
+        return set.stream().filter(s -> !ObjectUtils.isEmpty(s)).collect(Collectors.toList());
+    }
 }
