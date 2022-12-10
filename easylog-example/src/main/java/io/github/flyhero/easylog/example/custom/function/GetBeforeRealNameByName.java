@@ -20,7 +20,7 @@ public class GetBeforeRealNameByName implements ICustomFunction {
     }
 
     @Override
-    public String apply(String value) {
-        return "easylog".equals(value) ? "good" : value;
+    public String apply(Object value) {
+        return "easylog".equals(value) ? "good" : value.toString();
     }
 }

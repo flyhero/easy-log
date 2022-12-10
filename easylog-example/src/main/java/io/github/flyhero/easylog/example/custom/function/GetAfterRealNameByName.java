@@ -20,7 +20,7 @@ public class GetAfterRealNameByName implements ICustomFunction {
     }
 
     @Override
-    public String apply(String value) {
-        return "easylog-new".equals(value) ? "new" : value;
+    public String apply(Object value) {
+        return "easylog-new".equals(value) ? "new" : value.toString();
     }
 }

@@ -27,5 +27,5 @@ public interface ICustomFunction {
      * @param param 参数
      * @return 执行结果
      */
-    String apply(String param);
+    String apply(Object param);
 }

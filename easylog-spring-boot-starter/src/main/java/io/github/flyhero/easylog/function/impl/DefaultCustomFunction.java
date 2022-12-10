@@ -18,7 +18,7 @@ public class DefaultCustomFunction implements ICustomFunction {
     }
 
     @Override
-    public String apply(String value) {
+    public String apply(Object value) {
         return null;
     }
 }

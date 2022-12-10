@@ -13,7 +13,7 @@ public interface IFunctionService {
      * @param value        参数
      * @return 执行结果
      */
-    String apply(String functionName, String value);
+    String apply(String functionName, Object value);
 
     /**
      * 是否在拦截的方法执行前执行
