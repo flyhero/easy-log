@@ -49,10 +49,11 @@ public class EasyLogParser implements BeanFactoryAware {
                 StringBuffer parsedStr = new StringBuffer();
                 //匹配到字符串中的 {*{*}}
                 while (matcher.find()) {
-                    Object value = cachedExpressionEvaluator.parseExpression(matcher.group(2), elementKey, evaluationContext);
+                    String paramName = matcher.group(2);
+                    Object value = cachedExpressionEvaluator.parseExpression(paramName, elementKey, evaluationContext);
                     String funcName = matcher.group(1);
                     String param = value == null ? "" : value.toString();
-                    String functionVal = ObjectUtils.isEmpty(funcName) ? param : getFunctionVal(funcValBeforeExecMap, funcName, param);
+                    String functionVal = ObjectUtils.isEmpty(funcName) ? param : getFunctionVal(funcValBeforeExecMap, funcName, paramName);
                     // 将 functionVal 替换 {*{*}}，然后将 从头截至到 匹配的最后字符 之间的字符串，放入 parsedStr 中
                     matcher.appendReplacement(parsedStr, functionVal);
                 }
@@ -88,15 +89,15 @@ public class EasyLogParser implements BeanFactoryAware {
             }
             Matcher matcher = PATTERN.matcher(template);
             while (matcher.find()) {
-                String param = matcher.group(2);
-                if (param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.ERR_MSG) || param.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.RESULT)) {
+                String paramName = matcher.group(2);
+                if (paramName.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.ERR_MSG) || paramName.contains(EasyLogConsts.POUND_KEY + EasyLogConsts.RESULT)) {
                     continue;
                 }
                 String funcName = matcher.group(1);
                 if (customFunctionService.executeBefore(funcName)) {
-                    Object value = cachedExpressionEvaluator.parseExpression(param, elementKey, evaluationContext);
+                    Object value = cachedExpressionEvaluator.parseExpression(paramName, elementKey, evaluationContext);
                     String apply = customFunctionService.apply(funcName, value == null ? null : value.toString());
-                    map.put(getFunctionMapKey(funcName, param), apply);
+                    map.put(getFunctionMapKey(funcName, paramName), apply);
                 }
             }
         }
