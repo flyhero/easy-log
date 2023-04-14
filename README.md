@@ -53,7 +53,7 @@ easy-log是基于SpringBoot的一款通用操作日志组件，它指在帮助�
 <dependency>
     <groupId>io.github.flyhero</groupId>
     <artifactId>easylog-spring-boot-starter</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.1</version>
 </dependency>
 ```
 ### 5.2 配置
@@ -173,9 +173,10 @@ public class OpLogRecordService implements ILogRecordService {
 
 ## Change Log
 
-|版本| 内容 |状态 |
-|----|----|----|
+| 版本    | 内容                                       |状态 |
+|-------|------------------------------------------|----|
+| 2.1.1 | 1.去除lombok的依赖  2.修复前置函数的返回值获取错误          | 推荐使用|
 | 2.1.0 | 1.支持同一方法多个EasyLog注解  2.自定义函数参数支持Object类型 | 推荐使用|
-| 2.0.0 | 增加配置，提升性能，不兼容低版本 | 推荐使用|
-| 1.0.1 | 基本型，性能欠佳 | 不推荐|
-| 1.0.0 | 基本型，有bug，性能欠佳 | 不要使用|
+| 2.0.0 | 增加配置，提升性能，不兼容低版本                         | 推荐使用|
+| 1.0.1 | 基本型，性能欠佳                                 | 不推荐|
+| 1.0.0 | 基本型，有bug，性能欠佳                            | 不要使用|
