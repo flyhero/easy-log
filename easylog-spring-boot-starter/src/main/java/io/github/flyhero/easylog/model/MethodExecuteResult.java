@@ -1,11 +1,14 @@
 package io.github.flyhero.easylog.model;
 
+import lombok.Data;
+
 /**
  * 方法的执行结果
  *
  * @author WangQingFei(qfwang666 @ 163.com)
  * @date 2022/3/1 10:42
  */
+@Data
 public class MethodExecuteResult {
 
     private boolean success;
@@ -40,43 +43,4 @@ public class MethodExecuteResult {
         this.errMsg = throwable.getMessage();
     }
 
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public void setSuccess(boolean success) {
-        this.success = success;
-    }
-
-    public Throwable getThrowable() {
-        return throwable;
-    }
-
-    public void setThrowable(Throwable throwable) {
-        this.throwable = throwable;
-    }
-
-    public String getErrMsg() {
-        return errMsg;
-    }
-
-    public void setErrMsg(String errMsg) {
-        this.errMsg = errMsg;
-    }
-
-    public Long getOperateTime() {
-        return operateTime;
-    }
-
-    public void setOperateTime(Long operateTime) {
-        this.operateTime = operateTime;
-    }
-
-    public Long getExecuteTime() {
-        return executeTime;
-    }
-
-    public void setExecuteTime(Long executeTime) {
-        this.executeTime = executeTime;
-    }
 }
