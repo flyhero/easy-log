@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import lombok.extern.slf4j.Slf4j;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -17,8 +19,10 @@ import java.text.SimpleDateFormat;
  * @author WangQingFei(qfwang666 @ 163.com)
  * @date 2022/2/25 18:08
  */
-@Slf4j
 public class JsonUtils {
+
+    public static Logger log = LoggerFactory.getLogger(JsonUtils.class);
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
     // 日起格式化
     private static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";

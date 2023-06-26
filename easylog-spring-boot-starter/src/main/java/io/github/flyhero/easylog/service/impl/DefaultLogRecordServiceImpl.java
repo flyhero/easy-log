@@ -1,12 +1,15 @@
 package io.github.flyhero.easylog.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.github.flyhero.easylog.model.EasyLogInfo;
 import io.github.flyhero.easylog.service.ILogRecordService;
 import io.github.flyhero.easylog.util.JsonUtils;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class DefaultLogRecordServiceImpl implements ILogRecordService {
+
+    public static Logger log = LoggerFactory.getLogger(DefaultLogRecordServiceImpl.class);
 
     @Override
     public void record(EasyLogInfo easyLogInfo) {

@@ -1,6 +1,5 @@
 package io.github.flyhero.easylog.configuration;
 
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -10,7 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author WangQingFei(qfwang666 @ 163.com)
  * @date 2022/5/1 22:33
  */
-@Data
 @ConfigurationProperties(prefix = "easylog")
 public class EasyLogProperties {
     /**
@@ -28,4 +26,28 @@ public class EasyLogProperties {
      * 是否在控制台打印 banner，默认打印
      */
     private boolean banner = true;
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
+    public boolean isBanner() {
+        return banner;
+    }
+
+    public void setBanner(boolean banner) {
+        this.banner = banner;
+    }
 }

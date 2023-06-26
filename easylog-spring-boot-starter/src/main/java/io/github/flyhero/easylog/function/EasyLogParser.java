@@ -1,10 +1,9 @@
 package io.github.flyhero.easylog.function;
 
-import com.google.common.collect.Lists;
 import io.github.flyhero.easylog.constants.EasyLogConsts;
 import io.github.flyhero.easylog.context.EasyLogCachedExpressionEvaluator;
 import io.github.flyhero.easylog.exception.EasyLogException;
-import io.github.flyhero.easylog.model.EasyLogOps;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -18,7 +17,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author WangQingFei(qfwang666 @ 163.com)
@@ -53,7 +51,7 @@ public class EasyLogParser implements BeanFactoryAware {
                     Object value = cachedExpressionEvaluator.parseExpression(paramName, elementKey, evaluationContext);
                     String funcName = matcher.group(1);
                     String param = value == null ? "" : value.toString();
-                    String functionVal = ObjectUtils.isEmpty(funcName) ? param : getFunctionVal(funcValBeforeExecMap, funcName, paramName);
+                    String functionVal = ObjectUtils.isEmpty(funcName) ? param : getFuncVal(funcValBeforeExecMap, funcName, paramName, param);
                     // 将 functionVal 替换 {*{*}}，然后将 从头截至到 匹配的最后字符 之间的字符串，放入 parsedStr 中
                     matcher.appendReplacement(parsedStr, functionVal);
                 }
@@ -121,13 +119,14 @@ public class EasyLogParser implements BeanFactoryAware {
      *
      * @param funcValBeforeExecutionMap 执行之前的函数值
      * @param funcName                  函数名
+     * @param paramName                 函数参数名称
      * @param param                     函数参数
      * @return
      */
-    public String getFunctionVal(Map<String, String> funcValBeforeExecutionMap, String funcName, String param) {
+    public String getFuncVal(Map<String, String> funcValBeforeExecutionMap, String funcName, String paramName, String param) {
         String val = null;
         if (!CollectionUtils.isEmpty(funcValBeforeExecutionMap)) {
-            val = funcValBeforeExecutionMap.get(getFunctionMapKey(funcName, param));
+            val = funcValBeforeExecutionMap.get(getFunctionMapKey(funcName, paramName));
         }
         if (ObjectUtils.isEmpty(val)) {
             val = customFunctionService.apply(funcName, param);

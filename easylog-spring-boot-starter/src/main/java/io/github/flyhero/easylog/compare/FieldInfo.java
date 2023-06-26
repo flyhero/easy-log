@@ -1,13 +1,11 @@
 package io.github.flyhero.easylog.compare;
 
-import lombok.Data;
 
 /**
  * @author WangQingFei(qfwang666 @ 163.com)
  * @date 2022/2/20 22:52
  */
 
-@Data
 public class FieldInfo {
 
     /**
@@ -34,4 +32,44 @@ public class FieldInfo {
      * 新的属性值
      */
     private Object newFieldVal;
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
+    public Class<?> getOldFieldType() {
+        return oldFieldType;
+    }
+
+    public void setOldFieldType(Class<?> oldFieldType) {
+        this.oldFieldType = oldFieldType;
+    }
+
+    public Class<?> getNewFieldType() {
+        return newFieldType;
+    }
+
+    public void setNewFieldType(Class<?> newFieldType) {
+        this.newFieldType = newFieldType;
+    }
+
+    public Object getOldFieldVal() {
+        return oldFieldVal;
+    }
+
+    public void setOldFieldVal(Object oldFieldVal) {
+        this.oldFieldVal = oldFieldVal;
+    }
+
+    public Object getNewFieldVal() {
+        return newFieldVal;
+    }
+
+    public void setNewFieldVal(Object newFieldVal) {
+        this.newFieldVal = newFieldVal;
+    }
 }
