@@ -3,7 +3,10 @@ package io.github.flyhero.easylog.function;
 import io.github.flyhero.easylog.constants.EasyLogConsts;
 import io.github.flyhero.easylog.context.EasyLogCachedExpressionEvaluator;
 import io.github.flyhero.easylog.exception.EasyLogException;
+import io.github.flyhero.easylog.service.impl.DefaultLogRecordServiceImpl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -23,6 +26,8 @@ import java.util.regex.Pattern;
  * @date 2022/3/1 9:46
  */
 public class EasyLogParser implements BeanFactoryAware {
+
+    public static Logger log = LoggerFactory.getLogger(EasyLogParser.class);
 
     /**
      * 实现BeanFactoryAware以获取容器中的 beanFactory对象,
@@ -63,7 +68,8 @@ public class EasyLogParser implements BeanFactoryAware {
                 try {
                     value = cachedExpressionEvaluator.parseExpression(template, elementKey, evaluationContext);
                 } catch (Exception e) {
-                    throw new EasyLogException(method.getDeclaringClass().getName() + "." + method.getName() + "下 EasyLog 解析失败: [" + template + "], 请检查是否符合SpEl表达式规范！");
+                    value = template;
+                    log.warn(method.getDeclaringClass().getName() + "." + method.getName() + "下 EasyLog 不含表达式或表达式错误: [" + template + "], 如不包含表达式请忽略，如包含请检查是否符合SpEl表达式规范！");
                 }
                 map.put(template, value == null ? "" : value.toString());
             }
